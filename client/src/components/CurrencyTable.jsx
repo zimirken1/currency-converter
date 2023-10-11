@@ -7,7 +7,7 @@ const CurrencyTable = () => {
 
     const fetchSortedCurrencies = async (type) => {
         try {
-            const response = await axios.get(`http://localhost:8000/currencies/sort/${type === 'byName' ? 'byName' : 'byValueToUSD'}`);
+            const response = await axios.get(`http://localhost:8000/api/currencies/sort/${type === 'byName' ? 'byName' : 'byValueToUSD'}`);
             setCurrencies(response.data);
         } catch (error) {
             console.error("Error fetching sorted currencies:", error);
