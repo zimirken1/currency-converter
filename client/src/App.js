@@ -1,11 +1,20 @@
-import CurrencyTable from "./components/CurrencyTable";
+import React from "react";
+import {Route, Routes} from "react-router-dom";
+import CurrenciesPage from "./pages/CurrenciesPage";
+import ConverterPage from "./pages/ConverterPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import Navbar from "./components/Navbar";
 
 function App() {
     return (
-        <div className="App">
-            <h1>Currency Rates to 1 USD</h1>
-            <CurrencyTable />
-        </div>
+        <>
+            <Navbar/>
+            <Routes>
+                <Route path="/" element={<CurrenciesPage/>}/>
+                <Route path="/converter" element={<ConverterPage/>}/>
+                <Route path="*" element={<NotFoundPage/>}/>
+            </Routes>
+        </>
     );
 }
 

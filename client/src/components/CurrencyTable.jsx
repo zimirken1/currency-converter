@@ -15,7 +15,7 @@ const CurrencyTable = () => {
     };
 
     useEffect(() => {
-        fetchSortedCurrencies(sortType);
+        fetchSortedCurrencies(sortType).then();
     }, [sortType]);
 
     return (

@@ -106,6 +106,44 @@ class CurrencyController {
             res.status(500).send('Failed to fetch and sort currencies by valueToUSD');
         }
     }
+
+    convertCurrency = async (req, res) => {
+        try {
+            const currencyToConvert = req.params.currency;
+            const value = req.body.value;
+
+            const rates = await this.getCurrencies();
+            const targetCurrency = rates.find(rate => rate.Cur_Abbreviation === currencyToConvert);
+
+            if (!targetCurrency) {
+                return res.status(400).send('Currency not found');
+            }
+
+            const conversionResult = {};
+            rates.forEach(rate => {
+                conversionResult[rate.Cur_Abbreviation] = value * rate.valueToUSD;
+            });
+
+            res.json(conversionResult);
+
+        } catch (error) {
+            console.error('Error converting currency:', error);
+            res.status(500).send('Failed to convert currency');
+        }
+    }
+
+    convert = async (req, res) => {
+        try {
+            const requiredCurrencies = req.query.currencies.split(','); // Преобразовываем строку в массив
+            const currencies = await this.getCurrencies();
+            const filteredCurrencies = currencies.filter(currency => requiredCurrencies.includes(currency.Cur_Abbreviation));
+            res.json(filteredCurrencies);
+        } catch (error) {
+            console.error('Error fetching specific currencies:', error);
+            res.status(500).send('Failed to fetch specific currencies');
+        }
+    }
+
 }
 
 module.exports = new CurrencyController();
