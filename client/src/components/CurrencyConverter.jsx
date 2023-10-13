@@ -63,7 +63,6 @@ const CurrencyConverter = () => {
             setValues(prevValues => ({ ...prevValues, [selectedCurrency]: '' }));
 
             try {
-                // Производим расчет для новой валюты на основе значения в USD
                 const response = await axios.post(`http://localhost:8000/api/currencies/convert/USD`, { value: values.USD });
                 setValues(prevValues => ({
                     ...prevValues,
@@ -95,7 +94,6 @@ const CurrencyConverter = () => {
                             value={values[currency] || ''}
                             onChange={e => handleInputChange(currency, e.target.value)}
                         />
-                        {/* Показываем кнопку удаления только если это не одна из исходных валют */}
                         {!initialCurrencies.includes(currency) && (
                             <button onClick={() => removeCurrency(currency)}>Remove</button>
                         )}

@@ -134,7 +134,7 @@ class CurrencyController {
 
     convert = async (req, res) => {
         try {
-            const requiredCurrencies = req.query.currencies.split(','); // Преобразовываем строку в массив
+            const requiredCurrencies = req.query.currencies.split(',');
             const currencies = await this.getCurrencies();
             const filteredCurrencies = currencies.filter(currency => requiredCurrencies.includes(currency.Cur_Abbreviation));
             res.json(filteredCurrencies);
