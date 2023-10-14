@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import { fetchAllCurrencies, convertCurrency } from '../http/currencyAPI';
+import '../styles/ConverterPage.css'
 
 const CurrencyConverter = () => {
     const initialCurrencies = ['USD', 'EUR', 'RUB', 'BYN'];
@@ -15,47 +16,47 @@ const CurrencyConverter = () => {
     const [selectedCurrency, setSelectedCurrency] = useState('');
 
     useEffect(() => {
-        const fetchAllCurrencies = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/currencies');
-                setAllCurrencies(response.data.map(currency => currency.Cur_Abbreviation));
-            } catch (error) {
-                console.error("Error fetching all currencies:", error);
-            }
-        };
+                const allCurrenciesData = await fetchAllCurrencies();
+                setAllCurrencies(allCurrenciesData.map(currency => currency.Cur_Abbreviation));
 
-        const fetchInitialConversions = async () => {
-            try {
-                const response = await axios.post(`http://localhost:8000/api/currencies/convert/USD`, { value: '1' });
+                const initialConversions = await convertCurrency('USD', '1');
                 setValues(prevValues => ({
                     ...prevValues,
-                    ...response.data
+                    ...initialConversions
                 }));
             } catch (error) {
-                console.error("Error fetching initial conversions:", error);
+                console.error("Error fetching data:", error);
             }
         };
 
-        fetchAllCurrencies();
-        fetchInitialConversions();
+        fetchData();
     }, []);
 
-    const handleInputChange = async (currency, inputValue) => {
+    const handleInputChange = useCallback(async (currency, inputValue) => {
+        if (!/^[0-9.,]*$/.test(inputValue)) {
+            return;
+        }
+
         if (inputValue === '' || inputValue === undefined) {
             setValues(prevValues => ({ ...prevValues, [currency]: '' }));
             return;
         }
 
         try {
-            const response = await axios.post(`http://localhost:8000/api/currencies/convert/${currency}`, { value: inputValue });
+            const baseCurrencyValue = await convertCurrency(currency, inputValue, 'USD');
+            const allConversions = await convertCurrency('USD', baseCurrencyValue.USD);
             setValues(prevValues => ({
                 ...prevValues,
-                ...response.data
+                ...allConversions
             }));
         } catch (error) {
             console.error("Error converting currency:", error);
         }
-    };
+    }, []);
+
+
 
     const addCurrency = async () => {
         if (selectedCurrency && !availableCurrencies.includes(selectedCurrency)) {
@@ -63,16 +64,17 @@ const CurrencyConverter = () => {
             setValues(prevValues => ({ ...prevValues, [selectedCurrency]: '' }));
 
             try {
-                const response = await axios.post(`http://localhost:8000/api/currencies/convert/USD`, { value: values.USD });
+                const response = await convertCurrency('USD', values.USD);
                 setValues(prevValues => ({
                     ...prevValues,
-                    [selectedCurrency]: response.data[selectedCurrency]
+                    [selectedCurrency]: response[selectedCurrency]
                 }));
             } catch (error) {
                 console.error("Error converting for new currency:", error);
             }
         }
     };
+
     const removeCurrency = (currencyToRemove) => {
         setAvailableCurrencies(prevCurrencies => prevCurrencies.filter(currency => currency !== currencyToRemove));
         setValues(prevValues => {
@@ -83,24 +85,30 @@ const CurrencyConverter = () => {
     };
 
     return (
-        <div>
-            <h2>Currency Converter</h2>
-            <div>
+        <div className="currency-converter">
+            <h2 className="currency-converter__title">Currency Converter</h2>
+            <div className="currency-converter__content">
                 {availableCurrencies.map(currency => (
-                    <div key={currency} style={{ marginBottom: "10px" }}>
-                        <label>{currency}:</label>
+                    <div className="currency-converter__item" key={currency}>
+                        <label className="currency-converter__label">{currency}:</label>
                         <input
-                            type="number"
+                            className="currency-converter__input"
+                            type="text"
+                            pattern="^\d*\.?\d*$"
                             value={values[currency] || ''}
                             onChange={e => handleInputChange(currency, e.target.value)}
                         />
                         {!initialCurrencies.includes(currency) && (
-                            <button onClick={() => removeCurrency(currency)}>Remove</button>
+                            <button className="currency-converter__remove-button" onClick={() => removeCurrency(currency)}>Remove</button>
                         )}
                     </div>
                 ))}
-                <div>
-                    <select value={selectedCurrency} onChange={e => setSelectedCurrency(e.target.value)}>
+                <div className="currency-converter__controls">
+                    <select
+                        className="currency-converter__select"
+                        value={selectedCurrency}
+                        onChange={e => setSelectedCurrency(e.target.value)}
+                    >
                         <option value="">Select currency</option>
                         {allCurrencies.filter(currency => !availableCurrencies.includes(currency)).map(currency => (
                             <option key={currency} value={currency}>
@@ -108,12 +116,11 @@ const CurrencyConverter = () => {
                             </option>
                         ))}
                     </select>
-                    <button onClick={addCurrency}>Add Currency</button>
+                    <button className="currency-converter__add-button" onClick={addCurrency}>Add Currency</button>
                 </div>
             </div>
         </div>
     );
-
 }
 
 export default CurrencyConverter;

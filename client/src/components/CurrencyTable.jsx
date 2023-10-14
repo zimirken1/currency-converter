@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import {fetchSortedCurrencies} from "../http/currencyAPI";
+import '../styles/CurrenciesPage.css'
 
 const CurrencyTable = () => {
     const [currencies, setCurrencies] = useState([]);
     const [sortType, setSortType] = useState('byName');
 
-    const fetchSortedCurrencies = async (type) => {
-        try {
-            const response = await axios.get(`http://localhost:8000/api/currencies/sort/${type === 'byName' ? 'byName' : 'byValueToUSD'}`);
-            setCurrencies(response.data);
-        } catch (error) {
-            console.error("Error fetching sorted currencies:", error);
-        }
-    };
-
     useEffect(() => {
-        fetchSortedCurrencies(sortType).then();
+        const fetchData = async () => {
+            try {
+                const sortedCurrencies = await fetchSortedCurrencies(sortType);
+                setCurrencies(sortedCurrencies);
+            } catch (error) {
+                console.error("Error fetching sorted currencies:", error);
+            }
+        };
+
+        fetchData();
     }, [sortType]);
 
     return (
         <div>
             <label>Sort by:
-                <select value={sortType} onChange={e => setSortType(e.target.value)}>
+                <select className={"sort-type"} value={sortType} onChange={e => setSortType(e.target.value)}>
                     <option value="byName">Name</option>
                     <option value="byValueToUSD">Value to USD</option>
                 </select>

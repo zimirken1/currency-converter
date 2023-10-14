@@ -3,3 +3,10 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+.not-found-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+

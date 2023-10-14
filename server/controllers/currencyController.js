@@ -109,19 +109,26 @@ class CurrencyController {
 
     convertCurrency = async (req, res) => {
         try {
-            const currencyToConvert = req.params.currency;
-            const value = req.body.value;
+            const currencyToConvertFrom = req.params.currency;
+            const value = parseFloat(req.body.value);
+
+            if (isNaN(value)) {
+                return res.status(400).send('Invalid value');
+            }
 
             const rates = await this.getCurrencies();
-            const targetCurrency = rates.find(rate => rate.Cur_Abbreviation === currencyToConvert);
+            const fromCurrencyRate = rates.find(rate => rate.Cur_Abbreviation === currencyToConvertFrom);
 
-            if (!targetCurrency) {
+            if (!fromCurrencyRate) {
                 return res.status(400).send('Currency not found');
             }
 
+            // Конвертировать в базовую валюту (USD)
+            const valueInBaseCurrency = value / fromCurrencyRate.valueToUSD;
+
             const conversionResult = {};
             rates.forEach(rate => {
-                conversionResult[rate.Cur_Abbreviation] = value * rate.valueToUSD;
+                conversionResult[rate.Cur_Abbreviation] = (valueInBaseCurrency * rate.valueToUSD);
             });
 
             res.json(conversionResult);

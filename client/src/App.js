@@ -3,7 +3,7 @@ import {Route, Routes} from "react-router-dom";
 import CurrenciesPage from "./pages/CurrenciesPage";
 import ConverterPage from "./pages/ConverterPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/UI/Navbar";
 
 function App() {
     return (
